@@ -1,0 +1,790 @@
+<!-- ── FILE: templates/index.html ── -->
+<!-- AI-Based Fake News Detection — Frontend -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI-Based Fake News Detection System using Machine Learning — Analyze news articles for authenticity.">
+    <title>AI Fake News Detector</title>
+
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --primary: #00d4ff;
+            --danger: #ff3860;
+            --success: #23d160;
+            --text-main: #f8fafc;
+            --text-muted: #cbd5e1;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image: radial-gradient(circle at 50% 50%, rgba(0, 212, 255, 0.05) 0%, transparent 70%);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4, .poppins {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+        }
+
+        /* ── Floating Background Words ── */
+        .floating-words {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .word {
+            position: absolute;
+            font-weight: 800;
+            font-size: 2rem;
+            color: rgba(255, 255, 255, 0.02);
+            white-space: nowrap;
+            animation: floatWords var(--duration, 20s) linear infinite;
+        }
+
+        @keyframes floatWords {
+            0% { transform: translateY(110vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* ── Navbar ── */
+        .navbar-custom {
+            background: rgba(10, 10, 15, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-brand-custom {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 800;
+            font-size: 1.4rem;
+            color: #fff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-brand-custom i {
+            color: var(--primary);
+            margin-right: 10px;
+        }
+
+        /* ── Main Content ── */
+        .main-content {
+            position: relative;
+            z-index: 5;
+            padding: 4rem 0;
+        }
+
+        /* ── Hero Section ── */
+        .hero-section {
+            text-align: center;
+            margin-bottom: 3.5rem;
+        }
+
+        .hero-section h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(to bottom, #fff 40%, var(--primary));
+            -webkit-background-clip: text;
+            
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.2));
+        }
+
+        .hero-section p {
+            color: var(--text-muted);
+            font-size: 1.15rem;
+            max-width: 650px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        /* ── Glass Card ── */
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(0, 212, 255, 0.2);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        /* ── Textarea ── */
+        .input-textarea {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            color: var(--text-main);
+            font-size: 1rem;
+            padding: 1.5rem;
+            resize: vertical;
+            min-height: 220px;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .input-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.1);
+            background: rgba(255, 255, 255, 0.04);
+            color: #fff;
+        }
+
+        /* ── Mode Toggle ── */
+        .mode-toggle {
+            display: flex;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+            padding: 6px;
+            gap: 6px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            border: none;
+            border-radius: 10px;
+            padding: 0.8rem 1rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: transparent;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .mode-btn:hover:not(.active):not(.disabled-mode) {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+        }
+
+        .mode-btn.active {
+            background: var(--primary);
+            color: #000;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .mode-btn.disabled-mode {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .mode-badge {
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .badge-ml { background: rgba(0, 0, 0, 0.2); color: inherit; }
+        .badge-ai { background: rgba(0, 0, 0, 0.2); color: inherit; }
+
+        .mode-btn.active .mode-badge {
+            background: rgba(0, 0, 0, 0.15);
+        }
+
+        /* ── Analyze Button ── */
+        .btn-analyze {
+            background: var(--primary);
+            border: none;
+            border-radius: 16px;
+            padding: 1.2rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #000;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+        }
+
+        .btn-analyze:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+            color: #000;
+        }
+
+        /* ── Result Card ── */
+        .result-label {
+            font-size: 3.5rem;
+            font-weight: 800;
+            font-family: 'Poppins', sans-serif;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-label.real {
+            color: var(--success);
+            filter: drop-shadow(0 0 15px rgba(35, 209, 96, 0.3));
+        }
+
+        .result-label.fake {
+            color: var(--danger);
+            filter: drop-shadow(0 0 15px rgba(255, 56, 96, 0.3));
+        }
+
+        /* ── Progress Bar ── */
+        .custom-progress {
+            height: 12px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            overflow: hidden;
+            margin: 2rem 0;
+        }
+
+        .custom-progress-bar {
+            height: 100%;
+            transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .custom-progress-bar.real-bar { background: var(--success); box-shadow: 0 0 15px var(--success); }
+        .custom-progress-bar.fake-bar { background: var(--danger); box-shadow: 0 0 15px var(--danger); }
+
+        /* ── Prob Cards ── */
+        .prob-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+
+        .prob-value { font-size: 2.2rem; font-weight: 800; font-family: 'Poppins', sans-serif; }
+
+        /* ── Reasoning ── */
+        .reasoning-card {
+            background: rgba(0, 212, 255, 0.03);
+            border: 1px solid rgba(0, 212, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.8rem;
+            margin-top: 2rem;
+        }
+
+        /* ── Utilities: Error, Spinner, Word Count ── */
+        .input-textarea::placeholder {
+            color: #94a3b8;
+        }
+
+        .word-count {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-top: 0.5rem;
+        }
+
+        .word-count.sufficient {
+            color: var(--success);
+        }
+
+        .error-alert {
+            display: none;
+            background: rgba(255, 56, 96, 0.1);
+            border: 1px solid rgba(255, 56, 96, 0.3);
+            border-radius: 14px;
+            color: #ff8a80;
+            padding: 1rem 1.5rem;
+            animation: slideUp 0.4s ease;
+        }
+
+        .error-alert.show {
+            display: block;
+        }
+
+        .analyzing-spinner {
+            display: none;
+        }
+
+        .analyzing-spinner.show {
+            display: inline-block;
+        }
+
+
+        /* ── Back to Home Button ── */
+        .btn-back {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .btn-back:hover {
+            color: var(--primary);
+        }
+
+        footer {
+            border-top: 1px solid var(--glass-border);
+            padding: 3rem 0;
+            background: #07070a;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        footer a { color: var(--primary); text-decoration: none; }
+    </style>
+</head>
+<body>
+
+    <!-- Floating Background Words -->
+    <div class="floating-words" id="floatingWords"></div>
+
+    <!-- ── Navbar ────────────────────────────────────────── -->
+    <nav class="navbar navbar-custom">
+        <div class="container">
+            <a href="/" class="navbar-brand-custom">
+                <i class="fas fa-shield-halved"></i> TRUTHGUARD
+            </a>
+            <div class="ms-auto d-flex align-items-center">
+                <span class="text-secondary small d-none d-md-inline me-3">
+                    <i class="fas fa-microchip me-1"></i> AI-Powered Analysis
+                </span>
+                <a href="/" class="btn btn-outline-light btn-sm px-3" style="border-radius: 8px; border-color: var(--glass-border);">
+                    <i class="fas fa-home me-1"></i> Home
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ── Main Content ─────────────────────────────────── -->
+    <div class="main-content">
+        <div class="container" style="max-width: 800px;">
+
+            <!-- Back to Home -->
+            <a href="/" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+
+            <!-- Hero Section -->
+            <div class="hero-section">
+                <h1 class="poppins">Detect Fake News Instantly</h1>
+                <p>Paste any news article below and choose between our trained ML model or an AI-powered LLM analysis to determine its authenticity.</p>
+            </div>
+
+            <!-- Input Card -->
+            <div class="glass-card mb-4" id="inputCard">
+
+                <!-- Mode Toggle -->
+                <label class="form-label fw-semibold mb-2" style="font-size: 0.9rem; color: #9ca3af;">
+                    <i class="bi bi-toggles me-1"></i> Analysis Mode
+                </label>
+                <div class="mode-toggle mb-4" id="modeToggle">
+                    <button class="mode-btn active" id="mlModeBtn" onclick="setMode('ml')" title="Use trained Logistic Regression model">
+                        <i class="bi bi-gear-fill"></i>
+                        ML Model
+                        <span class="mode-badge badge-ml">Local</span>
+                    </button>
+                    <button class="mode-btn" id="aiModeBtn" onclick="setMode('ai')" title="Use OpenRouter LLM API">
+                        <i class="bi bi-stars"></i>
+                        AI Model
+                        <span class="mode-badge badge-ai">API</span>
+                    </button>
+                </div>
+
+                <label for="newsInput" class="form-label fw-semibold mb-3" style="font-size: 1rem;">
+                    <i class="bi bi-newspaper me-2"></i>Paste News Article
+                </label>
+                <textarea
+                    class="form-control input-textarea"
+                    id="newsInput"
+                    rows="8"
+                    placeholder="Paste the full news article text here for analysis. For best results, provide at least 100 words of the article content..."
+                ></textarea>
+                <div class="word-count" id="wordCount">0 words</div>
+
+                <div class="d-grid mt-4">
+                    <button class="btn btn-analyze" id="analyzeBtn" onclick="analyzeNews()">
+                        <span class="analyzing-spinner" id="spinner">
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            <span id="spinnerText">Analyzing...</span>
+                        </span>
+                        <span id="btnText">
+                            <i class="bi bi-search me-2"></i>Analyze News
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Error Alert -->
+            <div class="error-alert" id="errorAlert">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                <span id="errorText"></span>
+            </div>
+
+            <!-- Result Card -->
+            <div class="result-card glass-card mt-4" id="resultCard">
+                <div class="text-center">
+                    <!-- Big Label -->
+                    <div class="result-label" id="resultLabel"></div>
+                    <!-- Confidence -->
+                    <div class="confidence-text" id="confidenceText"></div>
+
+                    <!-- Progress Bar -->
+                    <div class="custom-progress mt-4">
+                        <div class="custom-progress-bar" id="progressBar" style="width: 0%"></div>
+                    </div>
+
+                    <!-- Probability Cards -->
+                    <div class="row g-3 mt-3">
+                        <div class="col-6">
+                            <div class="prob-card">
+                                <div class="prob-value" id="realProb" style="color: var(--accent-green);">—</div>
+                                <div class="prob-label">Real Probability</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="prob-card">
+                                <div class="prob-value" id="fakeProb" style="color: var(--accent-red);">—</div>
+                                <div class="prob-label">Fake Probability</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Reasoning (only shown for AI mode) -->
+                    <div class="reasoning-card" id="reasoningCard">
+                        <h6><i class="bi bi-chat-square-text me-1"></i> AI Reasoning</h6>
+                        <p id="reasoningText"></p>
+                        <span class="model-badge" id="modelBadge"></span>
+                    </div>
+
+                    <!-- Analyze Another Button -->
+                    <button class="btn btn-outline-light mt-4 px-4 py-2" onclick="resetForm()" style="border-radius: 12px;">
+                        <i class="bi bi-arrow-counterclockwise me-2"></i>Analyze Another Article
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ── Footer ───────────────────────────────────────── -->
+    <footer>
+        <div class="container">
+            <p class="mb-2 fw-bold text-white">TRUTHGUARD</p>
+            <p class="mb-2">Empowering citizens with artificial intelligence to navigate the digital age with clarity.</p>
+            <div class="d-flex justify-content-center gap-3 mt-3">
+                <a href="/">Home</a>
+                <a href="/#tech">Technology</a>
+                <a href="/#team">About</a>
+            </div>
+            <hr class="my-4 border-secondary opacity-25">
+            <div class="small">
+                © 2024 AI Fake News Detector Project. Built for Social Good.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // ── State ────────────────────────────────────────────
+        let currentMode = 'ml';     // 'ml' or 'ai'
+        let mlAvailable = true;
+        let aiAvailable = false;
+        let aiModelName = '';
+
+        // ── Check backend status on page load ────────────────
+        (async function checkStatus() {
+            /**
+             * Fetch /status to determine which backends are available
+             * and update the UI toggles accordingly.
+             */
+            try {
+                const res = await fetch('/status');
+                const data = await res.json();
+                mlAvailable = data.ml_available;
+                aiAvailable = data.ai_available;
+                aiModelName = data.ai_model || '';
+
+                // Update toggle states
+                const mlBtn = document.getElementById('mlModeBtn');
+                const aiBtn = document.getElementById('aiModeBtn');
+
+                if (!mlAvailable) {
+                    mlBtn.classList.add('disabled-mode');
+                    mlBtn.title = 'ML model not available — run train_model.py first';
+                }
+                if (!aiAvailable) {
+                    aiBtn.classList.add('disabled-mode');
+                    aiBtn.title = 'OpenRouter API key not configured';
+                }
+
+                // Auto-select available mode
+                if (!mlAvailable && aiAvailable) {
+                    setMode('ai');
+                } else if (mlAvailable) {
+                    setMode('ml');
+                }
+            } catch (e) {
+                console.error('Failed to check status:', e);
+            }
+        })();
+
+        // ── Mode Toggle ─────────────────────────────────────
+        function setMode(mode) {
+            /**
+             * Switch between ML and AI analysis modes.
+             * Validates that the selected mode is available.
+             */
+            if (mode === 'ml' && !mlAvailable) {
+                showError('ML model not available. Run "python train_model.py" first to generate model.pkl.');
+                return;
+            }
+            if (mode === 'ai' && !aiAvailable) {
+                showError('OpenRouter API key not configured. Add OPENROUTER_API_KEY to your .env file.');
+                return;
+            }
+
+            currentMode = mode;
+            document.getElementById('mlModeBtn').classList.toggle('active', mode === 'ml');
+            document.getElementById('aiModeBtn').classList.toggle('active', mode === 'ai');
+        }
+
+        // ── Word Counter ─────────────────────────────────────
+        const newsInput = document.getElementById('newsInput');
+        const wordCountEl = document.getElementById('wordCount');
+
+        newsInput.addEventListener('input', function () {
+            const words = this.value.trim().split(/\s+/).filter(w => w.length > 0);
+            const count = words.length;
+            wordCountEl.textContent = count + ' word' + (count !== 1 ? 's' : '');
+            wordCountEl.classList.toggle('sufficient', count >= 100);
+        });
+
+        // ── Analyze News ─────────────────────────────────────
+        function analyzeNews() {
+            /**
+             * Send the textarea text to the appropriate endpoint
+             * based on the selected mode (ML or AI).
+             */
+            const text = newsInput.value.trim();
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const spinner = document.getElementById('spinner');
+            const spinnerText = document.getElementById('spinnerText');
+            const btnText = document.getElementById('btnText');
+            const errorAlert = document.getElementById('errorAlert');
+            const resultCard = document.getElementById('resultCard');
+
+            // Hide previous results and errors
+            errorAlert.classList.remove('show');
+            resultCard.classList.remove('show');
+
+            // Validate input
+            if (!text) {
+                showError('Please paste a news article to analyze.');
+                return;
+            }
+
+            // Choose endpoint based on mode
+            const endpoint = currentMode === 'ai' ? '/predict-ai' : '/predict';
+            spinnerText.textContent = currentMode === 'ai' ? 'AI is thinking...' : 'Analyzing...';
+
+            // Show loading state
+            analyzeBtn.disabled = true;
+            spinner.classList.add('show');
+            btnText.style.display = 'none';
+
+            // Send POST request
+            fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: text })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Reset button
+                analyzeBtn.disabled = false;
+                spinner.classList.remove('show');
+                btnText.style.display = 'inline';
+
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+
+                // Display results
+                displayResults(data);
+            })
+            .catch(error => {
+                analyzeBtn.disabled = false;
+                spinner.classList.remove('show');
+                btnText.style.display = 'inline';
+                showError('Network error. Please ensure the server is running.');
+            });
+        }
+
+        // ── Display Results ──────────────────────────────────
+        function displayResults(data) {
+            /**
+             * Render the prediction results in the result card.
+             * Shows AI reasoning panel if in AI mode.
+             */
+            const resultLabel = document.getElementById('resultLabel');
+            const confidenceText = document.getElementById('confidenceText');
+            const progressBar = document.getElementById('progressBar');
+            const realProb = document.getElementById('realProb');
+            const fakeProb = document.getElementById('fakeProb');
+            const resultCard = document.getElementById('resultCard');
+            const reasoningCard = document.getElementById('reasoningCard');
+            const reasoningText = document.getElementById('reasoningText');
+            const modelBadge = document.getElementById('modelBadge');
+
+            // Set label and styling
+            if (data.label === 'REAL') {
+                resultLabel.textContent = 'REAL ✅';
+                resultLabel.className = 'result-label real';
+                progressBar.className = 'custom-progress-bar real-bar';
+            } else {
+                resultLabel.textContent = 'FAKE 🔴';
+                resultLabel.className = 'result-label fake';
+                progressBar.className = 'custom-progress-bar fake-bar';
+            }
+
+            // Set confidence
+            confidenceText.textContent = 'Confidence: ' + data.confidence + '%';
+
+            // Animate progress bar
+            setTimeout(() => {
+                progressBar.style.width = data.confidence + '%';
+            }, 100);
+
+            // Set probabilities
+            realProb.textContent = data.real_prob + '%';
+            fakeProb.textContent = data.fake_prob + '%';
+
+            // Show AI reasoning if available
+            if (data.reasoning) {
+                reasoningText.textContent = data.reasoning;
+                modelBadge.textContent = '🤖 ' + (data.model_used || 'AI Model');
+                reasoningCard.classList.add('show');
+            } else {
+                reasoningCard.classList.remove('show');
+            }
+
+            // Show card with animation
+            resultCard.classList.add('show');
+
+            // Scroll to results
+            resultCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        // ── Show Error ───────────────────────────────────────
+        function showError(message) {
+            /**
+             * Display an error message to the user.
+             */
+            const errorAlert = document.getElementById('errorAlert');
+            const errorText = document.getElementById('errorText');
+            errorText.textContent = message;
+            errorAlert.classList.add('show');
+        }
+
+        // ── Reset Form ───────────────────────────────────────
+        function resetForm() {
+            /**
+             * Clear input and hide results for a fresh analysis.
+             */
+            newsInput.value = '';
+            wordCountEl.textContent = '0 words';
+            wordCountEl.classList.remove('sufficient');
+            document.getElementById('resultCard').classList.remove('show');
+            document.getElementById('errorAlert').classList.remove('show');
+            document.getElementById('reasoningCard').classList.remove('show');
+            document.getElementById('progressBar').style.width = '0%';
+            newsInput.focus();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ── Ctrl+Enter Shortcut ──────────────────────────────
+        newsInput.addEventListener('keydown', function (e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                analyzeNews();
+            }
+        });
+        // ── Reset Form ──────────────────────────────────────
+        function resetForm() {
+            /**
+             * Clear inputs and results to start a new analysis.
+             */
+            newsInput.value = '';
+            wordCountEl.textContent = '0 words';
+            wordCountEl.classList.remove('sufficient');
+            document.getElementById('resultCard').classList.remove('show');
+            document.getElementById('errorAlert').classList.remove('show');
+            document.getElementById('newsInput').focus();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ── Floating Words Logic ─────────────────────────────
+        function initFloatingWords() {
+            const container = document.getElementById('floatingWords');
+            if (!container) return;
+            
+            const words = ['TRUTH', 'DATA', 'AI', 'FAKE', 'REAL', 'VERIFY', 'GUARD', 'SHIELD', 'LOGIC'];
+            const screenWidth = window.innerWidth;
+
+            for (let i = 0; i < 15; i++) {
+                const span = document.createElement('span');
+                span.className = 'word';
+                span.textContent = words[Math.floor(Math.random() * words.length)];
+                span.style.left = Math.random() * 100 + '%';
+                span.style.fontSize = (Math.random() * 2 + 1) + 'rem';
+                span.style.opacity = (Math.random() * 0.05 + 0.01);
+                span.style.setProperty('--duration', (Math.random() * 20 + 20) + 's');
+                span.style.animationDelay = (Math.random() * 20) + 's';
+                container.appendChild(span);
+            }
+        }
+
+        // Initialize background animation
+        document.addEventListener('DOMContentLoaded', initFloatingWords);
+    </script>
+</body>
+</html>

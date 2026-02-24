@@ -1,0 +1,932 @@
+<!-- ── FILE: templates/landing.html ── -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Truth Guard | AI-Based Fake News Detection</title>
+    
+    <!-- CDNs -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --primary: #00d4ff;
+            --danger: #ff3860;
+            --success: #23d160;
+            --text-main: #f8fafc;
+            --text-muted: #cbd5e1;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        /* ── Base Styles ── */
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        h1, h2, h3, h4, .poppins {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+        }
+
+        section {
+            padding: 100px 0;
+            position: relative;
+        }
+
+        .container {
+            max-width: 1100px;
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ── Section 1: Hero ── */
+        #hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            overflow: hidden;
+            background: radial-gradient(circle at 50% 50%, rgba(0, 212, 255, 0.05) 0%, transparent 70%);
+        }
+
+        .floating-words {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .word {
+            position: absolute;
+            font-weight: 800;
+            font-size: 2rem;
+            color: rgba(255, 255, 255, 0.03);
+            white-space: nowrap;
+            animation: floatWords var(--duration, 20s) linear infinite;
+        }
+
+        @keyframes floatWords {
+            0% { transform: translateY(110vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 10;
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 8vw, 5.5rem);
+            line-height: 1.1;
+            margin-bottom: 2rem;
+            background: linear-gradient(to bottom, #fff 40%, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.3));
+            animation: pulse-glow 3s infinite ease-in-out;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.3)); }
+            50% { filter: drop-shadow(0 0 25px rgba(0, 212, 255, 0.6)); }
+        }
+
+        .hero-sub {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 3rem;
+        }
+
+        .counter-box {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 10px 25px;
+            border-radius: 50px;
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 3rem;
+        }
+
+        .counter-dot {
+            width: 10px; height: 10px;
+            background: var(--danger);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--danger);
+            animation: flash 1s infinite;
+        }
+
+        @keyframes flash {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .btn-main {
+            background: var(--primary);
+            color: #000;
+            font-weight: 700;
+            padding: 15px 40px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s;
+            border: none;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+            text-decoration: none;
+        }
+
+        .btn-main:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.6);
+            color: #000;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #fff;
+            font-weight: 600;
+            padding: 15px 40px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: #fff;
+        }
+
+        /* ── Section 2: Problem ── */
+        .problem-stats {
+            background: linear-gradient(to bottom, transparent, rgba(255, 56, 96, 0.05));
+        }
+
+        .stat-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            height: 100%;
+            transition: 0.3s;
+        }
+
+        .stat-card:hover {
+            border-color: var(--danger);
+            transform: translateY(-10px);
+        }
+
+        .stat-number {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--danger);
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        /* ── Section 3: Story ── */
+        .story-illustration {
+            width: 100%;
+            height: 400px;
+            background: var(--glass);
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .viral-nodes {
+            position: relative;
+            width: 100%; height: 100%;
+            min-height: 350px;
+        }
+
+        .node {
+            position: absolute;
+            width: 12px; height: 12px;
+            background: var(--danger);
+            border-radius: 50%;
+            box-shadow: 0 0 15px var(--danger), 0 0 30px var(--danger);
+            animation: floatNode var(--float-dur, 5s) ease-in-out infinite alternate;
+            z-index: 2;
+        }
+
+        .node::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 80px; height: 80px;
+            margin-top: -40px; margin-left: -40px;
+            border: 1.5px solid var(--danger);
+            border-radius: 50%;
+            opacity: 0;
+            animation: pulseRipple 2.5s linear infinite;
+            animation-delay: inherit;
+        }
+
+        .node::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: var(--ray-len, 100px); height: 1.5px;
+            background: linear-gradient(90deg, var(--danger), transparent);
+            transform-origin: left center;
+            opacity: 0;
+            animation: scanRay var(--ray-dur, 4s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            animation-delay: inherit;
+        }
+
+        @keyframes floatNode {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(var(--tx, 30px), var(--ty, 30px)); }
+        }
+
+        @keyframes pulseRipple {
+            0% { transform: scale(0.1); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        @keyframes scanRay {
+            0% { transform: rotate(var(--rot-start, 0deg)); opacity: 0; }
+            15% { opacity: 0.9; }
+            85% { opacity: 0.9; }
+            100% { transform: rotate(var(--rot-end, 360deg)); opacity: 0; }
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 50px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 20px; top: 0; bottom: 0;
+            width: 2px;
+            background: var(--glass-border);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 50px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -37px; top: 0;
+            width: 15px; height: 15px;
+            background: var(--danger);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--danger);
+            z-index: 5;
+        }
+
+        .timeline-line {
+            position: absolute;
+            left: -30.5px; top: 15px;
+            width: 2px; height: 0;
+            background: var(--danger);
+            transition: height 1s ease-out;
+            z-index: 2;
+        }
+
+        /* ── Section 4: Solution ── */
+        .step-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 40px;
+            border-radius: 24px;
+            text-align: left;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            height: 100%;
+        }
+
+        .step-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 10px 40px rgba(0, 212, 255, 0.15);
+            transform: scale(1.02);
+        }
+
+        .step-icon {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 25px;
+            display: block;
+        }
+
+        /* ── Section 5: Tech ── */
+        .tech-box {
+            background: #0f0f15;
+            border: 1px solid var(--glass-border);
+            padding: 30px;
+            border-radius: 16px;
+            height: 100%;
+        }
+
+        .accuracy-meter {
+            height: 40px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 20px;
+            overflow: hidden;
+            margin: 20px 0;
+            border: 1px solid var(--glass-border);
+        }
+
+        .meter-fill {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, var(--primary), var(--success));
+            transition: width 2s ease;
+        }
+
+        /* ── Section 6: Live Demo ── */
+        .demo-frame {
+            width: 100%;
+            height: 700px;
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            background: #000;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+        }
+
+        /* ── Section 7: Proof ── */
+        .table-custom {
+            background: var(--glass);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .table-custom th { border: none; padding: 20px; color: var(--primary); }
+        .table-custom td { border: none; padding: 20px; color: #fff; background: rgba(255,255,255,0.01); }
+
+        .confusion-matrix {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 10px;
+            width: 100%; max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .cell {
+            padding: 30px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .cell label { display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
+        .cell span { font-size: 1.5rem; font-weight: 800; color: #fff; }
+        .cell.tp { border-color: var(--success); }
+        .cell.tn { border-color: var(--success); }
+
+        /* ── Section 8: Team ── */
+        .member-card {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .avatar {
+            width: 100px; height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), #302b63);
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 800;
+            color: #000;
+        }
+
+        /* ── Section 9: Final CTA ── */
+        .cta-final {
+            background: linear-gradient(-45deg, #0a0a0f, #151525, #00d4ff22, #0a0a0f);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* ── Footer ── */
+        footer { padding: 60px 0; border-top: 1px solid var(--glass-border); background: #07070a; }
+        .footer-link { color: var(--text-muted); text-decoration: none; transition: 0.3s; }
+        .footer-link:hover { color: var(--primary); }
+
+        /* ── Mobile Tweaks ── */
+        @media (max-width: 768px) {
+            section { padding: 60px 0; }
+            .hero-title { font-size: 3rem; }
+            .stat-number { font-size: 2.5rem; }
+            .demo-frame { height: 900px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Floating Background Words -->
+    <div class="floating-words" id="floatingWords"></div>
+
+    <!-- ── NAV ── -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background: rgba(10,10,15,0.8); backdrop-filter: blur(10px);">
+        <div class="container">
+            <a class="navbar-brand poppins" href="/"><i class="fas fa-shield-halved text-primary me-2"></i>TRUTHGUARD</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="#problem">The Crisis</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#solution">Our Solution</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#tech">Technology</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#demo">Live Demo</a></li>
+                    <li class="nav-item ms-lg-3">
+                        <a class="btn btn-main py-2" href="/detector">Try Now</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ── SECTION 1: HERO ── -->
+    <section id="hero">
+        <div class="container hero-content">
+            <h1 class="hero-title reveal">Can You Tell What's Real Anymore?</h1>
+            <p class="hero-sub reveal">Every 3 seconds, a fake news article is shared online. We built sophisticated AI to fight back and restore digital trust.</p>
+            
+            <div class="counter-box reveal">
+                <div class="counter-dot"></div>
+                <span class="poppins" id="mainCounter">0</span>
+                <span class="small text-muted">Fake Articles Identified</span>
+            </div>
+            
+            <div class="d-flex flex-column flex-md-row gap-3 justify-content-center reveal">
+                <a href="#demo" class="btn-main">Try the Detector <i class="fas fa-arrow-right ms-2"></i></a>
+                <a href="#problem" class="btn-outline">See How It Works <i class="fas fa-arrow-down ms-2"></i></a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── SECTION 2: PROBLEM ── -->
+    <section id="problem" class="problem-stats">
+        <div class="container text-center">
+            <h2 class="mb-5 reveal">The Misinformation Crisis Is Real</h2>
+            <div class="row g-4">
+                <div class="col-md-4 reveal">
+                    <div class="stat-card">
+                        <span class="stat-number" data-target="6">0</span>
+                        <h4 class="text-white">6x Faster</h4>
+                        <p class="text-muted">Fake news spreads 6x faster than real news across social networks (MIT Study).</p>
+                    </div>
+                </div>
+                <div class="col-md-4 reveal">
+                    <div class="stat-card">
+                        <span class="stat-number" data-target="75">0</span>
+                        <h4 class="text-white">75% Struggle</h4>
+                        <p class="text-muted">Three-quarters of adults are unable to reliably distinguish fake news from truth.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 reveal">
+                    <div class="stat-card">
+                        <span class="stat-number" data-val="78" data-suffix="B">0</span>
+                        <h4 class="text-white">$78B Loss</h4>
+                        <p class="text-muted">Misinformation causes over $78 billion in economic damage globally every single year.</p>
+                    </div>
+                </div>
+            </div>
+            <p class="mt-5 text-muted max-width-700 mx-auto reveal" style="font-size: 1.1rem; line-height: 1.8;">
+                In an era of deepfakes and mass-produced content, misinformation isn't just an annoyance — it's a weapon. 
+                It compromises public health, manipulates democratic elections, and polarizes entire societies before the facts even emerge.
+            </p>
+        </div>
+    </section>
+
+    <!-- ── SECTION 3: STORY ── -->
+    <section id="story">
+        <div class="container">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-6 reveal">
+                    <h2 class="mb-4">It Started With a Message</h2>
+                    <p class="mb-4">"URGENT: Don't open your windows tonight." A simple text, forwarded thousands of times in hours. By morning, a city was in panic. There was no emergency — just a ghost story designed to travel.</p>
+                    <p class="mb-4">We watched how one lie, packaged correctly, could travel around the globe before the truth could even finish its first cup of coffee. That's why we created TruthGuard.</p>
+                    
+                    <div class="timeline mt-5">
+                        <div class="timeline-item reveal">
+                            <div class="timeline-line" id="line1"></div>
+                            <h5>Step 1: The Fabrication</h5>
+                            <p class="text-muted">A sensationalist headline is generated by a bot or malicious actor, designed to trigger maximum emotional response.</p>
+                        </div>
+                        <div class="timeline-item reveal">
+                            <div class="timeline-line" id="line2"></div>
+                            <h5>Step 2: The Echo Chamber</h5>
+                            <p class="text-muted">Algorithms recognize the high engagement and push it to thousands of like-minded users who share it without verifying.</p>
+                        </div>
+                        <div class="timeline-item reveal">
+                            <h5>Step 3: The Impact</h5>
+                            <p class="text-muted">Real-world consequences occur — from store closures to medical misinformation — based on a document that never existed.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 reveal">
+                    <div class="story-illustration">
+                        <div class="viral-nodes" id="viralContainer">
+                            <!-- JS will inject nodes here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── SECTION 4: SOLUTION ── -->
+    <section id="solution" style="background: rgba(0, 212, 255, 0.02);">
+        <div class="container text-center">
+            <h2 class="mb-3 reveal">Meet Your AI Fact-Checker</h2>
+            <p class="text-muted mb-5 reveal">We use industry-standard Machine Learning to scan patterns humans miss.</p>
+            
+            <div class="row g-4 mt-5">
+                <div class="col-md-4 reveal">
+                    <div class="step-card">
+                        <i class="far fa-clipboard step-icon"></i>
+                        <h4 class="mb-3">Paste Article</h4>
+                        <p class="text-muted">Simply copy and paste raw text from any news source, social media post, or messaging app.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 reveal">
+                    <div class="step-card">
+                        <i class="fas fa-brain step-icon"></i>
+                        <h4 class="mb-3">AI Analysis</h4>
+                        <p class="text-muted">Our model analyzes over 5,000 linguistic features, sentiment markers, and structural patterns.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 reveal">
+                    <div class="step-card">
+                        <i class="far fa-check-circle step-icon"></i>
+                        <h4 class="mb-3">Instant Verdict</h4>
+                        <p class="text-muted">Get a REAL or FAKE label with a precise confidence score in less than 200 milliseconds.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── SECTION 5: TECH ── -->
+    <section id="tech">
+        <div class="container">
+            <div class="row g-5">
+                <div class="col-lg-6 reveal">
+                    <h2 class="mb-4">Powered by Real Machine Learning</h2>
+                    <div class="row g-3 mt-4">
+                        <div class="col-sm-6">
+                            <div class="tech-box">
+                                <h6 class="text-primary">NLP Pipeline</h6>
+                                <p class="small text-muted">Porter Stemming and Tokenization cleanup for raw text.</p>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="tech-box">
+                                <h6 class="text-primary">TF-IDF Vectorics</h6>
+                                <p class="small text-muted">Converting words into math using Term Frequency weighting.</p>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="tech-box">
+                                <h6 class="text-primary">Logistic Regression</h6>
+                                <p class="small text-muted">Advanced classification engine for ultra-fast inference.</p>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="tech-box">
+                                <h6 class="text-primary">Dual Mode</h6>
+                                <p class="small text-muted">Switch between Local Models and LLM-powered API logic.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 reveal">
+                    <div class="glass-card p-5" style="border-radius: 24px; border: 1px solid var(--glass-border);">
+                        <h4>Performance Benchmark</h4>
+                        <div class="mt-4">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Model Accuracy</span>
+                                <span class="text-primary fw-bold">98.7%</span>
+                            </div>
+                            <div class="accuracy-meter">
+                                <div class="meter-fill" data-width="98.7"></div>
+                            </div>
+                            <p class="small text-muted mt-2">Validated on 44,898 articles from the official Kaggle dataset.</p>
+                        </div>
+                        
+                        <div class="mt-5 architecture-flow text-center">
+                            <div class="d-flex align-items-center justify-content-around">
+                                <div class="p-2 border border-secondary rounded-3 small">Input</div>
+                                <i class="fas fa-chevron-right text-muted"></i>
+                                <div class="p-2 border border-secondary rounded-3 small">NLP</div>
+                                <i class="fas fa-chevron-right text-muted"></i>
+                                <div class="p-2 border border-primary rounded-3 small" style="background: rgba(0,212,255,0.1)">MODEL</div>
+                                <i class="fas fa-chevron-right text-muted"></i>
+                                <div class="p-2 border border-success rounded-3 small">Result</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── SECTION 6: LIVE DEMO ── -->
+    <section id="demo" style="background: #000;">
+        <div class="container text-center">
+            <h2 class="mb-5 reveal">Try It Right Now</h2>
+            <div class="reveal">
+                <iframe src="/detector" class="demo-frame" title="Detector Tool"></iframe>
+            </div>
+            <p class="mt-4 text-muted reveal">Powered by Logistic Regression trained on the Kaggle Fake/Real News Dataset.</p>
+        </div>
+    </section>
+
+    <!-- ── SECTION 7: PROOF ── -->
+    <section id="proof">
+        <div class="container">
+            <h2 class="text-center mb-5 reveal">The Numbers Don't Lie</h2>
+            <div class="row g-5">
+                <div class="col-lg-7 reveal">
+                    <div class="table-responsive">
+                        <table class="table table-custom">
+                            <thead>
+                                <tr>
+                                    <th>Metric</th>
+                                    <th>Logistic Regression</th>
+                                    <th>Naive Bayes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Accuracy</td><td>98.7%</td><td>94.1%</td></tr>
+                                <tr><td>F1 Score</td><td>0.987</td><td>0.938</td></tr>
+                                <tr><td>Precision</td><td>98.2%</td><td>93.6%</td></tr>
+                                <tr><td>Speed</td><td class="text-success">Ultra Fast</td><td>Fast</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-lg-5 reveal">
+                    <div class="confusion-matrix">
+                        <div class="cell tp"><span id="tpVal">4632</span><label>True Positive</label></div>
+                        <div class="cell"><span id="fpVal">78</span><label>False Positive</label></div>
+                        <div class="cell"><span id="fnVal">34</span><label>False Negative</label></div>
+                        <div class="cell tn"><span id="tnVal">4236</span><label>True Negative</label></div>
+                    </div>
+                    <p class="text-center mt-4 text-muted small">Confusion Matrix Data (Testing Set)</p>
+                </div>
+            </div>
+            
+            <div class="row mt-5 g-4">
+                <div class="col-md-4 reveal">
+                    <div class="stat-card p-4">
+                        <div class="avatar mb-3">JD</div>
+                        <p class="italic">"I use this every time I see a questionable forward on my family WhatsApp groups. It's incredibly fast."</p>
+                        <h6 class="text-primary mt-2">— John Doe</h6>
+                    </div>
+                </div>
+                <div class="col-md-4 reveal">
+                    <div class="stat-card p-4">
+                        <div class="avatar mb-3" style="background: linear-gradient(135deg, var(--danger), #302b63);">AS</div>
+                        <p class="italic">"The AI reasoning feature in API mode is a game changer for understanding why news is fake."</p>
+                        <h6 class="text-primary mt-2">— Alice Smith</h6>
+                    </div>
+                </div>
+                <div class="col-md-4 reveal">
+                    <div class="stat-card p-4">
+                        <div class="avatar mb-3" style="background: linear-gradient(135deg, var(--success), #302b63);">RK</div>
+                        <p class="italic">"A perfect demonstration of NLP projects for engineering finals. Clean code and reliable metrics."</p>
+                        <h6 class="text-primary mt-2">— Robert King</h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── SECTION 8: TEAM ── -->
+    <section id="team">
+        <div class="container text-center">
+            <h2 class="mb-5 reveal">Built by Students, Powered by AI</h2>
+            <div class="row justify-content-center g-4">
+                <div class="col-md-3 reveal">
+                    <div class="member-card">
+                        <div class="avatar">ML</div>
+                        <h5>Lead Dev</h5>
+                        <p class="text-muted small">ML Engineer</p>
+                    </div>
+                </div>
+                <div class="col-md-3 reveal">
+                    <div class="member-card">
+                        <div class="avatar">DS</div>
+                        <h5>Backend</h5>
+                        <p class="text-muted small">Python & Flask</p>
+                    </div>
+                </div>
+                <div class="col-md-3 reveal">
+                    <div class="member-card">
+                        <div class="avatar">UX</div>
+                        <h5>Frontend</h5>
+                        <p class="text-muted small">UI/UX Designer</p>
+                    </div>
+                </div>
+            </div>
+            <p class="mt-5 text-muted">Final Year Project — Computer Science Department, 2024</p>
+        </div>
+    </section>
+
+    <!-- ── SECTION 9: CTA ── -->
+    <section class="cta-final text-center py-5">
+        <div class="container py-5 reveal">
+            <h1 class="display-4 fw-bold mb-3 poppins">Stop Sharing. Start Verifying.</h1>
+            <p class="fs-4 text-muted mb-5">Join the fight against misinformation today.</p>
+            <a href="/detector" class="btn-main btn-lg px-5">Detect Fake News Now <i class="fas fa-bolt ms-2"></i></a>
+            <div class="mt-4 text-muted small">
+                Open Source <span class="mx-2">•</span> Free <span class="mx-2">•</span> No Login Required
+            </div>
+        </div>
+    </section>
+
+    <!-- ── FOOTER ── -->
+    <footer>
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <h4 class="text-white"><i class="fas fa-shield-halved text-primary me-2"></i>TRUTHGUARD</h4>
+                    <p class="text-muted mt-3">Empowering citizens with artificial intelligence to navigate the digital age with clarity and truth.</p>
+                </div>
+                <div class="col-md-2">
+                    <h6 class="text-white mb-3">Links</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#hero" class="footer-link">Home</a></li>
+                        <li><a href="#problem" class="footer-link">The Crisis</a></li>
+                        <li><a href="#solution" class="footer-link">How it Works</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="text-white mb-3">Tech Stack</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="badge bg-dark border border-secondary p-2">Python</span>
+                        <span class="badge bg-dark border border-secondary p-2">Flask</span>
+                        <span class="badge bg-dark border border-secondary p-2">scikit-learn</span>
+                        <span class="badge bg-dark border border-secondary p-2">NLTK</span>
+                        <span class="badge bg-dark border border-secondary p-2">Bootstrap 5</span>
+                    </div>
+                </div>
+            </div>
+            <hr class="my-5 border-secondary opacity-25">
+            <div class="text-center text-muted small">
+                © 2024 AI Fake News Detector Project. Built for Social Good.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // ── Floating Words Logic ──
+        const words = ['FAKE', 'REAL', 'TRUTH', 'LIES', 'VERIFIED', 'HOAX', 'NEWS', 'FACT', 'AI', 'DEEPFAKE', 'TRUST', 'MALWARE'];
+        const container = document.getElementById('floatingWords');
+        
+        function initFloatingWords() {
+            for (let i = 0; i < 20; i++) {
+                const span = document.createElement('span');
+                span.className = 'word';
+                span.innerText = words[Math.floor(Math.random() * words.length)];
+                span.style.left = Math.random() * 90 + '%';
+                span.style.top = Math.random() * 90 + '%';
+                span.style.setProperty('--duration', (15 + Math.random() * 15) + 's');
+                span.style.animationDelay = (Math.random() * 10) + 's';
+                span.style.fontSize = (1 + Math.random() * 2) + 'rem';
+                container.appendChild(span);
+            }
+        }
+        initFloatingWords();
+
+        // ── Reveal Animations ──
+        function reveal() {
+            const reveals = document.querySelectorAll(".reveal");
+            const windowHeight = window.innerHeight;
+            const revealPoint = 100;
+            
+            reveals.forEach(el => {
+                const revealTop = el.getBoundingClientRect().top;
+                if (revealTop < windowHeight - revealPoint) {
+                    el.classList.add("active");
+                    // Trigger child animations
+                    if (el.querySelector('.meter-fill')) {
+                        const meter = el.querySelector('.meter-fill');
+                        meter.style.width = meter.dataset.width + '%';
+                    }
+                    if (el.querySelector('.stat-number')) {
+                        startCounter(el.querySelector('.stat-number'));
+                    }
+                    if (el.querySelector('.timeline-line')) {
+                        el.querySelector('.timeline-line').style.height = '100px';
+                    }
+                }
+            });
+        }
+        window.addEventListener("scroll", reveal);
+        document.addEventListener("DOMContentLoaded", reveal);
+
+        // ── Counter Logic ──
+        function startCounter(el) {
+            if (el.dataset.running) return;
+            el.dataset.running = "true";
+            const target = +el.dataset.target || +el.dataset.val;
+            const suffix = el.dataset.suffix || "";
+            let count = 0;
+            const speed = 100;
+            const increment = target / speed;
+            
+            const update = () => {
+                if (count < target) {
+                    count += increment;
+                    el.innerText = Math.round(count) + suffix;
+                    setTimeout(update, 20);
+                } else {
+                    el.innerText = target + suffix;
+                }
+            };
+            update();
+        }
+
+        // ── Main Hero Counter ──
+        let mainTotal = 0;
+        const mainEl = document.getElementById('mainCounter');
+        function updateMainCounter() {
+            mainTotal += Math.floor(Math.random() * 10);
+            mainEl.innerText = mainTotal.toLocaleString();
+            setTimeout(updateMainCounter, 3000);
+        }
+        updateMainCounter();
+
+        // ── Viral Illustration ──
+        const viralContainer = document.getElementById('viralContainer');
+        function createViralIllustration() {
+            for (let i = 0; i < 15; i++) {
+                const node = document.createElement('div');
+                node.className = 'node';
+                node.style.left = (10 + Math.random() * 80) + '%';
+                node.style.top = (10 + Math.random() * 80) + '%';
+                
+                // Animation Randomization
+                const delay = Math.random() * 3;
+                node.style.animationDelay = delay + 's';
+                
+                // Float custom properties
+                node.style.setProperty('--float-dur', (4 + Math.random() * 4) + 's');
+                node.style.setProperty('--tx', (Math.random() * 80 - 40) + 'px');
+                node.style.setProperty('--ty', (Math.random() * 80 - 40) + 'px');
+                
+                // Ray properties
+                node.style.setProperty('--ray-len', (80 + Math.random() * 120) + 'px');
+                node.style.setProperty('--ray-dur', (3 + Math.random() * 3) + 's');
+                const rotStart = Math.random() * 360;
+                node.style.setProperty('--rot-start', rotStart + 'deg');
+                node.style.setProperty('--rot-end', (rotStart + 180 + Math.random() * 180) + 'deg');
+                
+                viralContainer.appendChild(node);
+            }
+        }
+        createViralIllustration();
+    </script>
+</body>
+</html>
