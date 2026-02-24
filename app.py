@@ -17,20 +17,53 @@ from dotenv import load_dotenv
 # ─── Load environment variables from .env file ─────────────────────────────────
 load_dotenv()
 
-# ─── Download required NLTK data ───────────────────────────────────────────────
-try:
-    nltk.download("punkt", quiet=True)
-    nltk.download("punkt_tab", quiet=True)
-    nltk.download("stopwords", quiet=True)
-except PermissionError:
-    print("⚠️  NLTK data download skipped (file locked). Using existing data.")
+# ─── NLTK setup (serverless-safe) ──────────────────────────────────────────────
+NLTK_TMP_DIR = "/tmp/nltk_data"
+
+if os.path.isdir("/tmp"):
+    os.makedirs(NLTK_TMP_DIR, exist_ok=True)
+    existing_nltk_data = os.environ.get("NLTK_DATA", "")
+    if NLTK_TMP_DIR not in existing_nltk_data.split(os.pathsep):
+        os.environ["NLTK_DATA"] = (
+            f"{NLTK_TMP_DIR}{os.pathsep}{existing_nltk_data}"
+            if existing_nltk_data
+            else NLTK_TMP_DIR
+        )
+    if NLTK_TMP_DIR not in nltk.data.path:
+        nltk.data.path.insert(0, NLTK_TMP_DIR)
+
+
+def ensure_nltk_resource(resource_path, package_name):
+    """Ensure an NLTK resource exists; attempt download to writable tmp dir if missing."""
+    try:
+        nltk.data.find(resource_path)
+        return True
+    except LookupError:
+        try:
+            nltk.download(package_name, quiet=True, download_dir=NLTK_TMP_DIR)
+            nltk.data.find(resource_path)
+            return True
+        except Exception as exc:
+            print(f"⚠️  NLTK resource '{package_name}' unavailable: {exc}")
+            return False
+
+
+PUNKT_AVAILABLE = ensure_nltk_resource("tokenizers/punkt", "punkt")
+PUNKT_TAB_AVAILABLE = ensure_nltk_resource("tokenizers/punkt_tab", "punkt_tab")
+STOPWORDS_AVAILABLE = ensure_nltk_resource("corpora/stopwords", "stopwords")
 
 # ─── Initialize Flask app ──────────────────────────────────────────────────────
 app = Flask(__name__)
 
 # ─── Initialize NLP tools ──────────────────────────────────────────────────────
 stemmer = PorterStemmer()
-stop_words = set(stopwords.words("english"))
+if STOPWORDS_AVAILABLE:
+    try:
+        stop_words = set(stopwords.words("english"))
+    except LookupError:
+        stop_words = set()
+else:
+    stop_words = set()
 
 # ─── Load model and vectorizer on startup (optional — app works in API-only mode) ──
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -86,7 +119,13 @@ def preprocess_text(text):
     text = re.sub(r"[^a-z\s]", "", text)
 
     # Step 3: Tokenize
-    tokens = word_tokenize(text)
+    if PUNKT_AVAILABLE or PUNKT_TAB_AVAILABLE:
+        try:
+            tokens = word_tokenize(text)
+        except LookupError:
+            tokens = text.split()
+    else:
+        tokens = text.split()
 
     # Step 4: Remove stopwords  &  Step 5: Stem
     tokens = [stemmer.stem(word) for word in tokens if word not in stop_words]
