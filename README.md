@@ -29,7 +29,7 @@ An AI-powered web application that uses **Natural Language Processing**, **Machi
 ## ✨ Features
 
 - **Cinematic Landing Page** — Interactive scroll-animations telling the story of misinformation
-- **Dual Verification Modes** — Toggles between Local ML and OpenRouter Deep AI Reasoning (`arcee-ai/trinity-large-preview:free`)
+- **Dual Verification Modes** — Toggles between Local ML (Logistic Regression) and OpenRouter Deep AI Reasoning (`arcee-ai/trinity-large-preview:free`)
 - **Dual Model Training** — Logistic Regression (primary) + Naive Bayes (comparison)
 - **NLP Preprocessing Pipeline** — Tokenization, stopword removal, stemming
 - **Real-Time API Endpoints** — Flask API providing predictions & confidence metrics
@@ -154,9 +154,15 @@ python train_model.py
 
 This will:
 - Load and preprocess all articles from `dataset/Fake.csv` and `dataset/True.csv`
-- Train Logistic Regression (primary) and Naive Bayes (comparison) models
+- Train **Logistic Regression** (primary model) and Naive Bayes (comparison model)
 - Print evaluation metrics and comparison table
 - Save `model.pkl` and `vectorizer.pkl` in the project root
+
+**ML Algorithms Used:**
+- **Logistic Regression** (Primary): Fast, interpretable linear classifier optimized for binary classification (fake/real). Powers the **Fast ML** button with ~94% accuracy.
+- **Naive Bayes** (Secondary): Probabilistic classifier based on Bayes' theorem for comparison and validation.
+
+Both use **TF-IDF vectorization** to convert article text into numerical features before classification.
 
 **Expected training time:** 2–5 minutes depending on hardware.
 
@@ -189,16 +195,14 @@ http://127.0.0.1:5000
 1. You will be greeted by the **Cinematic Landing Page** with misinformation context.
 2. Scroll down and click **"Try the Detector"** to enter the detector tool at `/detector`.
 3. Paste any news article text into the input field.
-4. Toggle between **Fast ML** (if trained) and **Deep AI reasoning** (if OPENROUTER_API_KEY is set).
+4. Toggle between two detection modes:
+   - **Fast ML** (Local): Uses **Logistic Regression** model trained on ~44,000 articles. ~Instant response, requires trained model.
+   - **Deep AI reasoning** (Remote): Uses **OpenRouter LLM** (arcee-ai/trinity-large-preview:free). Slower but more contextual analysis.
 5. Click **"Analyze News"** to get predictions and confidence scores.
 
-**API Endpoints Available:**
-- `GET /` — Landing page
-- `GET /detector` — Main detector tool
-- `GET /health` — Health check (returns `{"status": "ok"}`)
-- `GET /status` — Service status (shows ml_available, ai_available, api_key_required, ai_model)
-- `POST /predict` — Local ML prediction (requires trained model.pkl + vectorizer.pkl)
-- `POST /predict-ai` — OpenRouter LLM prediction (requires OPENROUTER_API_KEY)
+**Dual Detection Modes:**
+- `POST /predict` — **Logistic Regression** model inference (requires trained model.pkl + vectorizer.pkl, instant response)
+- `POST /predict-ai` — **OpenRouter LLM** inference for deeper contextual analysis (requires OPENROUTER_API_KEY, ~2-3s response)
 
 ---
 
