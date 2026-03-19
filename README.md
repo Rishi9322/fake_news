@@ -16,12 +16,13 @@ An AI-powered web application that uses **Natural Language Processing**, **Machi
 - [Project Structure](#-project-structure)
 - [Setup Instructions](#-setup-instructions)
 - [Dataset Download](#-dataset-download)
-- [Train the Model](#-train-the-model)
-- [Run the App](#-run-the-app)
-- [Secure API Keys](#-secure-api-keys)
+- [Configure Environment Variables](#-configure-environment-variables-before-running)
+- [Train the Model](#-train-the-model-optional-but-recommended)
+- [Run the App](#-run-the-app-locally)
 - [Deploy Live API (Render + GitHub Actions)](#-deploy-live-api-render--github-actions)
 - [Testing Suites (Playwright & Selenium)](#-testing-suites)
 - [Tech Stack](#-tech-stack)
+- [Complete Local Setup](#-complete-local-setup-end-to-end)
 
 ---
 
@@ -68,10 +69,11 @@ fake-news-detection/
 - pip (Python package manager)
 - Internet connection (for NLTK downloads and OpenRouter API)
 
-### 1. Clone or Download the Project
+### 1. Clone the Repository
 
 ```bash
-cd fake-news-detection
+git clone https://github.com/Rishi9322/fake_news.git
+cd fake_news
 ```
 
 ### 2. Create a Virtual Environment (Recommended)
@@ -113,7 +115,36 @@ dataset/
 
 ---
 
-## 🧠 Train the Model
+## 🔐 Configure Environment Variables (Before Running)
+
+**This step is required** if you want to use the AI button. The app will work without it (using only local ML).
+
+1. Create a `.env` file in the project root (copy from `.env.example`):
+
+```bash
+cp .env.example .env
+```
+
+2. Edit `.env` and fill in your values:
+
+```bash
+OPENROUTER_API_KEY=sk-or-v1-xxxxxxxxxxxxxxxxx  # Free tier from https://openrouter.ai/keys
+OPENROUTER_MODEL=arcee-ai/trinity-large-preview:free
+APP_API_KEY=your_private_api_key   # optional: leave blank to disable
+FLASK_DEBUG=True   # Set to False in production
+PORT=5000
+```
+
+**Notes:**
+- If `OPENROUTER_API_KEY` is missing, the AI button will be disabled (only local ML works).
+- If `APP_API_KEY` is set, routes `/predict` and `/predict-ai` require header `X-API-Key: <APP_API_KEY>` to use the API.
+- See `.env.example` for a template.
+
+---
+
+## 🧠 Train the Model [Optional but Recommended]
+
+**Skip this if** you only want to test the AI endpoint without local ML predictions.
 
 Once the dataset is in place, run the training script:
 
@@ -122,51 +153,52 @@ python train_model.py
 ```
 
 This will:
-- Load and preprocess all articles
-- Train Logistic Regression and Naive Bayes models
+- Load and preprocess all articles from `dataset/Fake.csv` and `dataset/True.csv`
+- Train Logistic Regression (primary) and Naive Bayes (comparison) models
 - Print evaluation metrics and comparison table
 - Save `model.pkl` and `vectorizer.pkl` in the project root
 
 **Expected training time:** 2–5 minutes depending on hardware.
 
+**After training**, the **Fast ML** button will work on the web UI.
+
 ---
 
-## 🚀 Run the App
+## 🚀 Run the App Locally
 
-After training is complete:
+Once dependencies and environment are configured:
 
 ```bash
 python app.py
 ```
 
-Then open your browser and navigate to:
+You should see:
+```
+✅ OpenRouter API key loaded
+WARNING in app.py:XX, line XX: ...
+* Running on http://127.0.0.1:5000
+```
+
+Then open your browser:
 
 ```
 http://127.0.0.1:5000
 ```
 
-1. You will be greeted by the **Cinematic Landing Page**. Scroll down to read the context.
-2. Click **"Try the Detector"** to enter the core app at `/detector`.
-3. Paste any news article and toggle between **Fast ML** and **Deep AI reasoning**. Click **"Analyze News"**.
+**User Experience:**
+1. You will be greeted by the **Cinematic Landing Page** with misinformation context.
+2. Scroll down and click **"Try the Detector"** to enter the detector tool at `/detector`.
+3. Paste any news article text into the input field.
+4. Toggle between **Fast ML** (if trained) and **Deep AI reasoning** (if OPENROUTER_API_KEY is set).
+5. Click **"Analyze News"** to get predictions and confidence scores.
 
----
-
-## 🔐 Secure API Keys
-
-This project reads all sensitive values from environment variables.
-
-Use a local `.env` file (not committed) with:
-
-```bash
-OPENROUTER_API_KEY=your_openrouter_api_key
-OPENROUTER_MODEL=openai/gpt-4o-mini
-APP_API_KEY=your_private_api_key   # optional
-```
-
-Notes:
-- If `OPENROUTER_API_KEY` is missing, `/predict-ai` is disabled.
-- If `APP_API_KEY` is set, API routes `/predict` and `/predict-ai` require header `X-API-Key: <APP_API_KEY>`.
-- A template is included in `.env.example`.
+**API Endpoints Available:**
+- `GET /` — Landing page
+- `GET /detector` — Main detector tool
+- `GET /health` — Health check (returns `{"status": "ok"}`)
+- `GET /status` — Service status (shows ml_available, ai_available, api_key_required, ai_model)
+- `POST /predict` — Local ML prediction (requires trained model.pkl + vectorizer.pkl)
+- `POST /predict-ai` — OpenRouter LLM prediction (requires OPENROUTER_API_KEY)
 
 ---
 
@@ -259,58 +291,72 @@ pytest tests/test_selenium.py -v
 
 ---
 
-## 💻 Tech Stack
+## 🛠️ Tech Stack
 
 ### Backend
-- **Framework**: Flask 3.1.0 (lightweight Python web framework)
-- **ML Pipeline**: scikit-learn 1.7.2 (Logistic Regression, TF-IDF vectorizer)
+- **Language**: Python 3.11+
+- **Framework**: Flask 3.1.0
+- **ML Library**: scikit-learn 1.7.2 (Logistic Regression, TF-IDF vectorizer)
 - **NLP**: nltk 3.9.1 (tokenization, stopword removal, stemming)
-- **Data Processing**: pandas 2.3.2, numpy 2.2.3
-- **API Calls**: requests 2.32.3 (OpenRouter LLM integration)
-- **Server**: gunicorn 23.0.0 (production WSGI server)
-- **Environment**: python-dotenv 1.0.1
+- **Data**: pandas 2.3.2, numpy 2.2.3
+- **GenAI Integration**: OpenRouter API (free tier available)
+- **Production Server**: gunicorn 23.0.0
 
 ### Frontend
-- **Templating**: Jinja2, HTML5, CSS3, Bootstrap 5.3
-- **Styling**: Glassmorphism, animations, dark theme
-- **JavaScript**: Vanilla JS for interactivity (fetch API, DOM manipulation)
+- **Templating**: Jinja2, HTML5, CSS3
+- **Framework**: Bootstrap 5.3
+- **Styling**: Glassmorphism, dark theme, animations
+- **Interactivity**: Vanilla JavaScript
 
-### Testing
-- **pytest**: Test framework
-- **Playwright**: Fast, headless browser testing
-- **Selenium**: Traditional WebDriver-based UI testing
-
-### Deployment
-- **Platform**: Render.com (Python 3.14.3 runtime)
+### Testing & Deployment
+- **Testing**: pytest, Playwright, Selenium WebDriver
+- **Hosting**: Render.com (Python 3.14.3 runtime)
 - **CI/CD**: GitHub Actions
 - **Version Control**: Git + GitHub
 
 ---
 
-## 📝 Quick Start (End-to-End)
+## 📝 Complete Local Setup (End-to-End)
+
+Follow these steps in order for a fully functional local setup:
 
 ```bash
-# 0. Clone repo
-git clone https://github.com/Rishi9322/fake_news.git && cd fake_news
+# 1. Clone the repository
+git clone https://github.com/Rishi9322/fake_news.git
+cd fake_news
 
-# 1. Create virtual environment
+# 2. Create virtual environment
 python -m venv venv
-venv\Scripts\activate  # or: source venv/bin/activate
 
-# 2. Install requirements
+# Activate it:
+# Windows:
+venv\Scripts\activate
+# macOS / Linux:
+source venv/bin/activate
+
+# 3. Install dependencies
 pip install -r requirements.txt
 
-# 3. Download dataset (optional for UI, required for training)
-# From kaggle: https://www.kaggle.com/datasets/clmentbisaillon/fake-and-real-news-dataset
-# Extract Fake.csv and True.csv to ./dataset/
+# 4. Set up environment variables (IMPORTANT!)
+cp .env.example .env
+# Edit .env and add your OPENROUTER_API_KEY (get from https://openrouter.ai/keys)
 
-# 4. Train model (optional for API only)
-python train_model.py
+# 5. [Optional] Download dataset and train the model
+# Download from: https://www.kaggle.com/datasets/clmentbisaillon/fake-and-real-news-dataset
+# Extract Fake.csv and True.csv into dataset/ folder
+python train_model.py  # ~2-5 minutes
 
-# 5. Start the Flask server
+# 6. Start the Flask app
 python app.py
 
-# 6. Open http://127.0.0.1:5000 in your browser
+# 7. Open in browser
+# http://127.0.0.1:5000
+```
+
+**Optional: Run Tests**
+```bash
+# Keep Flask running in another terminal, then:
+python -m pytest tests/ -v
 ```
 
 ---
