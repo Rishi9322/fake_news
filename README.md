@@ -1,12 +1,10 @@
-# ── FILE: README.md ──
-
 # 🛡️ AI-Based Fake News Detection System
 
 An AI-powered web application that uses **Natural Language Processing**, **Machine Learning**, and **OpenRouter LLMs** to detect fake news articles. Built with a storytelling cinematic UI.
 
-![Python](https://img.shields.io/badge/Python-3.9+-blue?logo=python)
-![Flask](https://img.shields.io/badge/Flask-3.0-green?logo=flask)
-![scikit-learn](https://img.shields.io/badge/scikit--learn-1.3-orange?logo=scikit-learn)
+![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python)
+![Flask](https://img.shields.io/badge/Flask-3.1-green?logo=flask)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-1.7-orange?logo=scikit-learn)
 ![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-purple?logo=bootstrap)
 ![Playwright](https://img.shields.io/badge/Playwright-Testing-red?logo=playwright)
 
@@ -66,9 +64,9 @@ fake-news-detection/
 
 ### Prerequisites
 
-- Python 3.9 or higher
+- Python 3.11 or higher
 - pip (Python package manager)
-- Internet connection (for NLTK downloads)
+- Internet connection (for NLTK downloads and OpenRouter API)
 
 ### 1. Clone or Download the Project
 
@@ -181,22 +179,26 @@ This repo includes a CI/CD workflow at `.github/workflows/python-app.yml` that:
 ### One-time setup
 
 1. Create a **Render Web Service** connected to this GitHub repo.
-2. Configure Render service commands:
-	- **Build Command:** `pip install -r requirements.txt`
-	- **Start Command:** `gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120`
-3. Ensure Render uses Python 3.11 via `runtime.txt` in this repo.
-4. In Render environment variables, set:
-	- `OPENROUTER_API_KEY`
-	- `OPENROUTER_MODEL` (for example: `arcee-ai/trinity-large-preview:free`)
-	- `APP_API_KEY` (optional, for protected API)
-5. In Render, copy your **Deploy Hook URL**.
+2. Render will auto-detect the build and start commands from `Procfile`:
+	- **Procfile** specifies: `gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120`
+	- **build.sh** runs: `pip install --upgrade pip && pip install -r requirements.txt`
+3. Render will auto-use Python 3.14.3 (default). All dependencies in `requirements.txt` have pre-built wheels for Python 3.14:
+	- Flask 3.1.0, scikit-learn 1.7.2, pandas 2.3.2, numpy 2.2.3, nltk 3.9.1, joblib 1.4.2, requests 2.32.3, python-dotenv 1.0.1, gunicorn 23.0.0
+4. In Render **Environment Variables**, set:
+	- `OPENROUTER_API_KEY` (get from https://openrouter.ai/keys)
+	- `OPENROUTER_MODEL` (example: `arcee-ai/trinity-large-preview:free`)
+	- `APP_API_KEY` (optional, for header-based API security)
+	- `FLASK_DEBUG=False` (for production)
+5. In Render, copy your **Deploy Hook URL** from Settings.
 6. In GitHub repo settings → Secrets and variables → Actions, add:
 	- `RENDER_DEPLOY_HOOK` = your deploy hook URL
 
 ### Deploy behavior
 
-- If `RENDER_DEPLOY_HOOK` is missing, CI will still pass tests and skip the deploy trigger step.
-- If `RENDER_DEPLOY_HOOK` exists, deploy trigger runs automatically on push to `main`.
+- GitHub Actions CI runs **lint + tests** on all pushes and PRs.
+- On push to `main` with `RENDER_DEPLOY_HOOK` configured, CI automatically triggers Render deployment.
+- If `RENDER_DEPLOY_HOOK` is not set, tests still run and pass; deploy step is silently skipped.
+- Render deployment typically completes in 1-2 minutes (all wheels pre-built for Python 3.14).
 
 ### Go live
 
@@ -214,11 +216,16 @@ POST /predict-ai
 ### Troubleshooting
 
 - **503 on all routes (`/`, `/health`, `/status`)**:
-	The service likely failed to boot. Check Render deploy logs.
-- **Build stuck on scikit-learn metadata/wheel**:
-	This happens on unsupported Python versions (e.g., 3.14 source builds). Keep `runtime.txt` pinned to Python 3.11.
+	The service failed to boot due to missing environment variables or API key issues. Check Render deploy logs for the actual error.
+- **Build stuck or taking 60+ minutes**:
+	This was a Python 3.14 wheel compatibility issue (resolved). All current dependencies have pre-built wheels; if it happens again, check that `requirements.txt` matches the versions in this commit.
 - **AI button disabled on live UI**:
-	`/status` is returning `ai_available: false`. Confirm `OPENROUTER_API_KEY` is set in Render env vars and redeploy.
+	The `/status` endpoint returns `ai_available: false`. Causes:
+	  - Missing or invalid `OPENROUTER_API_KEY` in Render environment variables
+	  - Incorrect `OPENROUTER_MODEL` name in environment
+	  - Render hasn't redeployed after env var changes (manually trigger deploy in Render dashboard)
+- **Local testing returns 503 on /predict-ai**:
+	Missing `OPENROUTER_API_KEY` in local `.env` file. Add it and restart `app.py`.
 
 ---
 
@@ -252,35 +259,58 @@ pytest tests/test_selenium.py -v
 
 ---
 
-## 🛠️ Tech Stack
+## 💻 Tech Stack
 
-| Component     | Technology                           |
-|---------------|--------------------------------------|
-| Language      | Python 3.13                          |
-| GenAI LLM     | OpenRouter API                       |
-| ML Library    | scikit-learn 1.3                     |
-| Web Framework | Flask 3.0                            |
-| Frontend      | HTML5, Bootstrap 5.3, Vanilla JS     |
-| E2E Testing   | Playwright, Selenium                 |
-| Verification  | Pytest                               |
+### Backend
+- **Framework**: Flask 3.1.0 (lightweight Python web framework)
+- **ML Pipeline**: scikit-learn 1.7.2 (Logistic Regression, TF-IDF vectorizer)
+- **NLP**: nltk 3.9.1 (tokenization, stopword removal, stemming)
+- **Data Processing**: pandas 2.3.2, numpy 2.2.3
+- **API Calls**: requests 2.32.3 (OpenRouter LLM integration)
+- **Server**: gunicorn 23.0.0 (production WSGI server)
+- **Environment**: python-dotenv 1.0.1
+
+### Frontend
+- **Templating**: Jinja2, HTML5, CSS3, Bootstrap 5.3
+- **Styling**: Glassmorphism, animations, dark theme
+- **JavaScript**: Vanilla JS for interactivity (fetch API, DOM manipulation)
+
+### Testing
+- **pytest**: Test framework
+- **Playwright**: Fast, headless browser testing
+- **Selenium**: Traditional WebDriver-based UI testing
+
+### Deployment
+- **Platform**: Render.com (Python 3.14.3 runtime)
+- **CI/CD**: GitHub Actions
+- **Version Control**: Git + GitHub
 
 ---
 
-## 📝 Quick Start (5 Steps)
+## 📝 Quick Start (End-to-End)
 
 ```bash
-# 1. Install dependencies
+# 0. Clone repo
+git clone https://github.com/Rishi9322/fake_news.git && cd fake_news
+
+# 1. Create virtual environment
+python -m venv venv
+venv\Scripts\activate  # or: source venv/bin/activate
+
+# 2. Install requirements
 pip install -r requirements.txt
 
-# 2. Download dataset from Kaggle and place CSVs in dataset/ folder
+# 3. Download dataset (optional for UI, required for training)
+# From kaggle: https://www.kaggle.com/datasets/clmentbisaillon/fake-and-real-news-dataset
+# Extract Fake.csv and True.csv to ./dataset/
 
-# 3. Train the models
+# 4. Train model (optional for API only)
 python train_model.py
 
-# 4. Start the Flask server
+# 5. Start the Flask server
 python app.py
 
-# 5. Open http://127.0.0.1:5000 in your browser
+# 6. Open http://127.0.0.1:5000 in your browser
 ```
 
 ---
