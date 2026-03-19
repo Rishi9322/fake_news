@@ -1,5 +1,8 @@
 name: Python application
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 on:
   push:
     branches:
@@ -43,7 +46,7 @@ jobs:
 
   deploy-api:
     name: Deploy API service
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && secrets.RENDER_DEPLOY_HOOK != ''
     needs: build-and-test
     runs-on: ubuntu-latest
     environment: production
@@ -53,9 +56,5 @@ jobs:
         env:
           RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
         run: |
-          if [ -z "$RENDER_DEPLOY_HOOK" ]; then
-            echo "RENDER_DEPLOY_HOOK secret is not set."
-            exit 1
-          fi
           curl -fsS -X POST "$RENDER_DEPLOY_HOOK"
           echo "Render deployment triggered successfully."
