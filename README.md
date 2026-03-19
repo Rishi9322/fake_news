@@ -20,6 +20,8 @@ An AI-powered web application that uses **Natural Language Processing**, **Machi
 - [Dataset Download](#-dataset-download)
 - [Train the Model](#-train-the-model)
 - [Run the App](#-run-the-app)
+- [Secure API Keys](#-secure-api-keys)
+- [Deploy Live API (Render + GitHub Actions)](#-deploy-live-api-render--github-actions)
 - [Testing Suites (Playwright & Selenium)](#-testing-suites)
 - [Tech Stack](#-tech-stack)
 
@@ -148,6 +150,57 @@ http://127.0.0.1:5000
 1. You will be greeted by the **Cinematic Landing Page**. Scroll down to read the context.
 2. Click **"Try the Detector"** to enter the core app at `/detector`.
 3. Paste any news article and toggle between **Fast ML** and **Deep AI reasoning**. Click **"Analyze News"**.
+
+---
+
+## 🔐 Secure API Keys
+
+This project reads all sensitive values from environment variables.
+
+Use a local `.env` file (not committed) with:
+
+```bash
+OPENROUTER_API_KEY=your_openrouter_api_key
+OPENROUTER_MODEL=openai/gpt-4o-mini
+APP_API_KEY=your_private_api_key   # optional
+```
+
+Notes:
+- If `OPENROUTER_API_KEY` is missing, `/predict-ai` is disabled.
+- If `APP_API_KEY` is set, API routes `/predict` and `/predict-ai` require header `X-API-Key: <APP_API_KEY>`.
+- A template is included in `.env.example`.
+
+---
+
+## 🌐 Deploy Live API (Render + GitHub Actions)
+
+This repo includes a CI/CD workflow at `.github/workflows/python-app.yml` that:
+1. Runs lint + backend tests on each push/PR.
+2. Triggers Render deployment on push to `main`.
+
+### One-time setup
+
+1. Create a **Render Web Service** connected to this GitHub repo.
+2. In Render environment variables, set:
+	- `OPENROUTER_API_KEY`
+	- `OPENROUTER_MODEL` (optional)
+	- `APP_API_KEY` (optional, for protected API)
+3. In Render, copy your **Deploy Hook URL**.
+4. In GitHub repo settings → Secrets and variables → Actions, add:
+	- `RENDER_DEPLOY_HOOK` = your deploy hook URL
+
+### Go live
+
+Push to `main`. GitHub Actions will test and then trigger Render deploy.
+
+After deployment, verify:
+
+```bash
+GET /health
+GET /status
+POST /predict
+POST /predict-ai
+```
 
 ---
 

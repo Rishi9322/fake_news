@@ -87,12 +87,27 @@ except FileNotFoundError:
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 OPENROUTER_MODEL = os.environ.get("OPENROUTER_MODEL", "openai/gpt-4o-mini")
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
+APP_API_KEY = os.environ.get("APP_API_KEY", "")
 
 if OPENROUTER_API_KEY:
     print(f"✅ OpenRouter API key loaded (model: {OPENROUTER_MODEL})")
 else:
     print("⚠️  OPENROUTER_API_KEY not set — AI prediction disabled.")
     print("   Set it in a .env file or as an environment variable.")
+
+if APP_API_KEY:
+    print("✅ APP_API_KEY enabled for protected API access")
+else:
+    print("ℹ️  APP_API_KEY not set — API endpoints are public")
+
+
+def is_authorized_api_request():
+    """Validate API key when APP_API_KEY is configured."""
+    if not APP_API_KEY:
+        return True
+
+    request_key = request.headers.get("X-API-Key", "").strip()
+    return request_key == APP_API_KEY
 
 
 def preprocess_text(text):
@@ -252,7 +267,14 @@ def status():
         "ml_available": model is not None and vectorizer is not None,
         "ai_available": bool(OPENROUTER_API_KEY),
         "ai_model": OPENROUTER_MODEL,
+        "api_key_required": bool(APP_API_KEY),
     })
+
+
+@app.route("/health")
+def health():
+    """Simple health check endpoint for cloud platforms/load balancers."""
+    return jsonify({"status": "ok"}), 200
 
 
 @app.route("/predict", methods=["POST"])
@@ -273,6 +295,9 @@ def predict():
         }
     """
     try:
+        if not is_authorized_api_request():
+            return jsonify({"error": "Unauthorized. Invalid or missing API key."}), 401
+
         # Check if ML model is loaded
         if model is None or vectorizer is None:
             return jsonify({
@@ -336,6 +361,9 @@ def predict_ai():
         }
     """
     try:
+        if not is_authorized_api_request():
+            return jsonify({"error": "Unauthorized. Invalid or missing API key."}), 401
+
         # Parse input
         data = request.get_json(force=True)
         text = data.get("text", "").strip()
@@ -366,4 +394,6 @@ def predict_ai():
 
 # ─── Run the app ────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    debug_mode = os.environ.get("FLASK_DEBUG", "0") == "1"
+    app.run(debug=debug_mode, host="0.0.0.0", port=port)
