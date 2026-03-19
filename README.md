@@ -176,22 +176,31 @@ Notes:
 
 This repo includes a CI/CD workflow at `.github/workflows/python-app.yml` that:
 1. Runs lint + backend tests on each push/PR.
-2. Triggers Render deployment on push to `main`.
+2. Triggers Render deployment on push to `main` (when `RENDER_DEPLOY_HOOK` is configured).
 
 ### One-time setup
 
 1. Create a **Render Web Service** connected to this GitHub repo.
-2. In Render environment variables, set:
+2. Configure Render service commands:
+	- **Build Command:** `pip install -r requirements.txt`
+	- **Start Command:** `gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120`
+3. Ensure Render uses Python 3.11 via `runtime.txt` in this repo.
+4. In Render environment variables, set:
 	- `OPENROUTER_API_KEY`
-	- `OPENROUTER_MODEL` (optional)
+	- `OPENROUTER_MODEL` (for example: `arcee-ai/trinity-large-preview:free`)
 	- `APP_API_KEY` (optional, for protected API)
-3. In Render, copy your **Deploy Hook URL**.
-4. In GitHub repo settings → Secrets and variables → Actions, add:
+5. In Render, copy your **Deploy Hook URL**.
+6. In GitHub repo settings → Secrets and variables → Actions, add:
 	- `RENDER_DEPLOY_HOOK` = your deploy hook URL
+
+### Deploy behavior
+
+- If `RENDER_DEPLOY_HOOK` is missing, CI will still pass tests and skip the deploy trigger step.
+- If `RENDER_DEPLOY_HOOK` exists, deploy trigger runs automatically on push to `main`.
 
 ### Go live
 
-Push to `main`. GitHub Actions will test and then trigger Render deploy.
+Push to `main` (or click **Manual Deploy** in Render).
 
 After deployment, verify:
 
@@ -201,6 +210,15 @@ GET /status
 POST /predict
 POST /predict-ai
 ```
+
+### Troubleshooting
+
+- **503 on all routes (`/`, `/health`, `/status`)**:
+	The service likely failed to boot. Check Render deploy logs.
+- **Build stuck on scikit-learn metadata/wheel**:
+	This happens on unsupported Python versions (e.g., 3.14 source builds). Keep `runtime.txt` pinned to Python 3.11.
+- **AI button disabled on live UI**:
+	`/status` is returning `ai_available: false`. Confirm `OPENROUTER_API_KEY` is set in Render env vars and redeploy.
 
 ---
 
